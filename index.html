@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elgi Trivia</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #87CEFA, #B0E0E6); /* Latar belakang biru langit yang berwarna-warni */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 80%;
+            max-width: 600px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #4a90e2;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .description {
+            margin-bottom: 20px;
+            font-size: 1.2em;
+            color: #555;
+            line-height: 1.5;
+            transition: opacity 0.5s ease;
+        }
+        .question {
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .question-number {
+            font-size: 1.1em;
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+        .options button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            background-color: #1E90FF; /* Biru tombol */
+            color: #fff;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .options button:hover {
+            background-color: #4682b4; /* Biru lebih gelap saat hover */
+            transform: scale(1.02);
+        }
+        .options button.correct {
+            background-color: #4caf50; /* Hijau untuk jawaban benar */
+        }
+        .options button.incorrect {
+            background-color: #f44336; /* Merah untuk jawaban salah */
+        }
+        .feedback {
+            font-size: 1.1em;
+            margin-top: 10px;
+            color: #d9534f;
+        }
+        .score {
+            font-size: 1.8em;
+            margin-top: 20px;
+            color: #5bc0de;
+        }
+        .award {
+            font-size: 1.3em;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #4a90e2;
+        }
+        .fade-out {
+            animation: fadeOut 0.5s forwards;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s forwards;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Elgi Trivia</div>
+        <div id="description-container" class="description">Selamat datang di Elgi Trivia! Uji pengetahuan Anda dengan menjawab pertanyaan-pertanyaan berikut. Setiap jawaban benar akan menambah skor Anda. Selamat bermain!</div>
+        <div id="question-container" class="question"></div>
+        <div id="options-container" class="options"></div>
+        <div id="feedback-container" class="feedback"></div>
+        <div id="score-container" class="score"></div>
+        <div id="award-container" class="award"></div>
+    </div>
+
+    <script>
+        const allQuestions = [
+            { question: "Apa ibu kota Prancis?", options: ["Berlin", "Madrid", "Paris", "Roma"], answer: "Paris" },
+            { question: "Siapa penulis 'To Kill a Mockingbird'?", options: ["Harper Lee", "J.K. Rowling", "Ernest Hemingway", "Mark Twain"], answer: "Harper Lee" },
+            { question: "Apa planet terbesar di sistem tata surya kita?", options: ["Bumi", "Mars", "Jupiter", "Saturnus"], answer: "Jupiter" },
+            { question: "Apa simbol kimia untuk emas?", options: ["Au", "Ag", "Pb", "Fe"], answer: "Au" },
+            { question: "Siapa pelukis Mona Lisa?", options: ["Vincent Van Gogh", "Claude Monet", "Leonardo da Vinci", "Pablo Picasso"], answer: "Leonardo da Vinci" },
+            { question: "Apa angka prima terkecil?", options: ["0", "1", "2", "3"], answer: "2" },
+            { question: "Elemen apa yang memiliki nomor atom 1?", options: ["Helium", "Hidrogen", "Litium", "Oksigen"], answer: "Hidrogen" },
+            { question: "Apa lautan terbesar di Bumi?", options: ["Samudra Atlantik", "Samudra Hindia", "Samudra Arktik", "Samudra Pasifik"], answer: "Samudra Pasifik" },
+            { question: "Tahun berapa Titanic tenggelam?", options: ["1912", "1905", "1915", "1920"], answer: "1912" },
+            { question: "Siapa yang dikenal sebagai bapak komputer?", options: ["Alan Turing", "Charles Babbage", "Ada Lovelace", "Bill Gates"], answer: "Charles Babbage" },
+            { question: "Apa zat alami terkeras di Bumi?", options: ["Emas", "Besi", "Berlian", "Platinum"], answer: "Berlian" },
+            { question: "Planet mana yang dikenal sebagai Planet Merah?", options: ["Bumi", "Venus", "Mars", "Merkurius"], answer: "Mars" },
+            { question: "Gas apa yang paling melimpah di atmosfer Bumi?", options: ["Oksigen", "Hidrogen", "Nitrogen", "Karbon Dioksida"], answer: "Nitrogen" },
+            { question: "Siapa penulis drama 'Romeo dan Juliet'?", options: ["William Shakespeare", "George Bernard Shaw", "Christopher Marlowe", "Tennessee Williams"], answer: "William Shakespeare" },
+            { question: "Apa ibu kota Jepang?", options: ["Beijing", "Seoul", "Tokyo", "Kyoto"], answer: "Tokyo" },
+            { question: "Benua apa yang terkecil berdasarkan luas daratan?", options: ["Australia", "Eropa", "Amerika Selatan", "Antartika"], answer: "Australia" },
+            { question: "Di negara mana Anda akan menemukan Piramida Agung Giza?", options: ["Mesir", "Yunani", "Meksiko", "Cina"], answer: "Mesir" },
+            { question: "Apa bahan utama dalam guacamole?", options: ["Tomat", "Bawang", "Alpukat", "Paprika"], answer: "Alpukat" },
+            { question: "Di lautan mana Kanal Suez berada?", options: ["Samudra Atlantik", "Samudra Hindia", "Samudra Pasifik", "Laut Mediterania"], answer: "Laut Mediterania" },
+            { question: "Apa pulau terbesar di dunia?", options: ["Greenland", "New Guinea", "Borneo", "Madagaskar"], answer: "Greenland" },
+            { question: "Apa ibu kota Kanada?", options: ["Toronto", "Vancouver", "Montreal", "Ottawa"], answer: "Ottawa" }
+        ];
+
+        function getRandomQuestions(questions, num) {
+            let shuffled = questions.sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, num);
+        }
+
+        const questions = getRandomQuestions(allQuestions, 10);
+        let score = 0;
+        let questionIndex = 0;
+
+        function showQuestion() {
+            const questionContainer = document.getElementById('question-container');
+            const optionsContainer = document.getElementById('options-container');
+            const descriptionContainer = document.getElementById('description-container');
+
+            if (questionIndex >= questions.length) {
+                questionContainer.textContent = '';
+                optionsContainer.innerHTML = '';
+                document.getElementById('feedback-container').textContent = '';
+                document.getElementById('score-container').textContent = `Skor Anda adalah ${score} poin!`;
+                document.getElementById('award-container').textContent = getAward(score);
+                return;
+            }
+
+            const question = questions[questionIndex];
+            
+            // Animasi untuk transisi pertanyaan
+            questionContainer.classList.add('fade-out');
+            setTimeout(() => {
+                questionContainer.innerHTML = `<div class="question-number">Pertanyaan ${questionIndex + 1}</div>${question.question}`;
+                questionContainer.classList.remove('fade-out');
+                questionContainer.classList.add('fade-in');
+                
+                // Animasi transisi untuk deskripsi
+                descriptionContainer.classList.add('fade-out');
+                setTimeout(() => {
+                    descriptionContainer.classList.remove('fade-out');
+                    descriptionContainer.classList.add('fade-in');
+                }, 500);
+
+                optionsContainer.innerHTML = '';
+                const options = [...question.options];
+                options.sort(() => Math.random() - 0.5); // Mengacak opsi
+
+                options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.onclick = () => checkAnswer(option, button);
+                    optionsContainer.appendChild(button);
+                });
+
+                document.getElementById('feedback-container').textContent = '';
+            }, 500);
+        }
+
+        function checkAnswer(selectedOption, button) {
+            const correctAnswer = questions[questionIndex].answer;
+            if (selectedOption === correctAnswer) {
+                score += 10;
+                button.classList.add('correct');
+                document.getElementById('feedback-container').textContent = `Jawaban benar!`;
+                document.getElementById('feedback-container').style.color = 'green';
+            } else {
+                button.classList.add('incorrect');
+                document.getElementById('feedback-container').textContent = `Jawaban salah! Jawaban yang benar adalah ${correctAnswer}.`;
+                document.getElementById('feedback-container').style.color = 'red';
+            }
+
+            // Nonaktifkan semua tombol setelah jawaban dipilih
+            document.querySelectorAll('.options button').forEach(btn => btn.disabled = true);
+
+            // Tampilkan pertanyaan berikut setelah 1 detik
+            setTimeout(() => {
+                questionIndex++;
+                showQuestion();
+            }, 1000);
+        }
+
+        function getAward(score) {
+            if (score >= 80) return "Hebat! Anda adalah seorang Master Trivia!";
+            if (score >= 60) return "Bagus! Anda adalah seorang Ahli Trivia!";
+            if (score >= 40) return "Baik! Anda memiliki Pengetahuan Trivia yang Kuat!";
+            if (score >= 20) return "Lumayan! Anda masih bisa belajar lebih banyak!";
+            return "Coba lagi! Kesempatan berikutnya pasti lebih baik!";
+        }
+
+        // Mulai kuis
+        showQuestion();
+    </script>
+</body>
+</html>
+
